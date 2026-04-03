@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ben Pro PTY LTD - Project Management & AI Consulting</title>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -337,6 +339,28 @@
             min-height: 120px;
         }
         
+        .form-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .form-status.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #86efac;
+            border: 1px solid #22c55e;
+            display: block;
+        }
+        
+        .form-status.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid #ef4444;
+            display: block;
+        }
+        
         footer {
             background: #0a0f15;
             border-top: 1px solid rgba(37, 99, 235, 0.1);
@@ -477,7 +501,7 @@
         <h2 class="section-title">Get In Touch</h2>
         <div class="contact-section">
             <h2>Contact Us</h2>
-            <form onsubmit="handleSubmit(event)">
+            <form id="contactForm">
                 <div class="form-group">
                     <label for="name">Full Name</label>
                     <input type="text" id="name" name="name" required>
@@ -495,6 +519,7 @@
                     <textarea id="message" name="message" required></textarea>
                 </div>
                 <button type="submit" class="cta-button" style="width: 100%; border: 2px solid #ef4444;">Send Message</button>
+                <div id="formStatus" class="form-status"></div>
             </form>
         </div>
     </section>
@@ -507,20 +532,50 @@
     </footer>
 
     <script>
-        function handleSubmit(event) {
-            event.preventDefault();
-            const formData = {
+        // Initialize EmailJS
+        emailjs.init('A3kRkDGFYNAm3H1Fj');
+        
+        // Handle form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
+            
+            const templateParams = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 company: document.getElementById('company').value,
                 message: document.getElementById('message').value
             };
             
-            console.log('Form submission:', formData);
-            alert('Thank you! Your message has been received. We will get back to you soon at ' + formData.email);
-            event.target.reset();
-        }
+            emailjs.send('A3kRkDGFYNAm3H1Fj', 'template_6e9o27a', templateParams)
+                .then(function(response) {
+                    console.log('Email sent successfully!', response.status, response.text);
+                    
+                    const statusDiv = document.getElementById('formStatus');
+                    statusDiv.textContent = 'Thank you! Your message has been sent successfully. We will get back to you soon.';
+                    statusDiv.className = 'form-status success';
+                    
+                    document.getElementById('contactForm').reset();
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                })
+                .catch(function(error) {
+                    console.error('Failed to send email:', error);
+                    
+                    const statusDiv = document.getElementById('formStatus');
+                    statusDiv.textContent = 'Error sending message. Please try again or email us directly at info@benpro.net';
+                    statusDiv.className = 'form-status error';
+                    
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                });
+        });
         
+        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
